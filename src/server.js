@@ -2,6 +2,7 @@ const express = require('express')
 const mongoose = require('mongoose')
 const path = require('path')
 
+const api = require('./api')
 require('dotenv').config()
 
 const uri = process.env.MONGO_URI
@@ -25,6 +26,7 @@ const app = express()
 const PORT = 3000
 
 app.use(express.json())
+app.use('/api', api)
 
 app.get('*', (req, res) => {
 	res.send('Default route is working')
