@@ -1,0 +1,28 @@
+# 日誌文件
+*.log
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# 目錄
+tmp
+temp
+
+# Node.js 套件目錄
+node_modules
+
+# Debug logs
+npm-debug.log*
+
+# 編輯器目錄
+.vscode
+
+# 系統文件
+.DS_Store
+Thumbs.db
+
+# 環境變數
+.env
