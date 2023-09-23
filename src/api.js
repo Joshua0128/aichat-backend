@@ -1,10 +1,11 @@
 const express = require('express')
 
 const Session = require('./model/sessions')
+const openAIChat = require('./utils/openai')
 
 const router = express.Router()
 
-router.get('/sessions', async (req, res) => {
+router.get('/session', async (req, res) => {
 	try {
 		// 只回傳 user, title, 和 createdAt 的部分
 		const sessions = await Session.find({}, 'user title createdAt')
@@ -14,7 +15,7 @@ router.get('/sessions', async (req, res) => {
 	}
 })
 
-router.get('/sessions/:userId', async (req, res) => {
+router.get('/session/user/:userId', async (req, res) => {
 	try {
 		const sessions = await Session.find(
 			{ user: req.params.userId },
@@ -49,7 +50,7 @@ router.post('/session', async (req, res) => {
 		const session = new Session({
 			user: req.body.user,
 			title: req.body.title,
-			messages: req.body.messages,
+			messages: [],
 			createdAt: new Date(),
 		})
 		await session.save()
@@ -59,14 +60,26 @@ router.post('/session', async (req, res) => {
 	}
 })
 
-//PUT /api/sessions/:sessionId/messages
 router.put('/session/:sessionId/messages', async (req, res) => {
 	try {
 		const session = await Session.findById(req.params.sessionId)
-		session.messages.push(req.body.content)
-		await session.save()
-		res.json(session)
+		console.log(session)
+		messages = session.messages
+		messages.push(req.body.content)
+		console.log(messages)
+		result = await openAIChat(messages)
+		console.log(result)
+		if (result) {
+			session.messages.push(result.message.content)
+			await session.save()
+			res.json(session)
+		} else {
+			session.messages.push("Sorry, I don't understand.")
+			await session.save()
+			res.json(session)
+		}
 	} catch (error) {
+		console.log(error)
 		res.status(500).json({ error: 'Internal Server Error' })
 	}
 })
