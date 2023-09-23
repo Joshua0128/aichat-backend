@@ -262,4 +262,56 @@ router.put('/session/:sessionId/messages', async (req, res) => {
 	}
 })
 
+/**
+ * @swagger
+ * /session/{sessionId}/{title}:
+ *   put:
+ *     description: Update the title of a specified session
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: sessionId
+ *         description: ID of the session to be updated
+ *         in: path
+ *         required: true
+ *         type: string
+ *       - name: title
+ *         description: New title for the session
+ *         in: path
+ *         required: true
+ *         type: string
+ *     responses:
+ *       200:
+ *         description: Session title successfully updated
+ *         schema:
+ *           type: object
+ *           properties:
+ *             _id:
+ *               type: string
+ *             user:
+ *               type: string
+ *             title:
+ *               type: string
+ *             messages:
+ *               type: array
+ *               items:
+ *                 type: string
+ *             createdAt:
+ *               type: string
+ *               format: date-time
+ *       500:
+ *         description: Internal Server Error
+ */
+router.put('/session/:sessionId/:title', async (req, res) => {
+	try {
+		const session = await Session.findById(req.params.sessionId)
+		session.title = req.params.title
+		await session.save()
+		res.json(session)
+	} catch (error) {
+		console.log(error)
+		res.status(500).json({ error: 'Internal Server Error' })
+	}
+})
+
 module.exports = router
