@@ -204,47 +204,63 @@ router.post('/session/:userId', async (req, res) => {
 
 /**
  * @swagger
- * definitions:
- *   MessageContent:
- *     properties:
- *       content:
- *         type: string
- *         description: The message content to be added to the session's messages array
- *
  * /session/{sessionId}/messages:
  *   put:
- *     description: Add a message to a specific session and get a response message from the system
+ *     description: Add a message to a specific session
  *     produces:
- *       - application/json
- *     consumes:
  *       - application/json
  *     parameters:
  *       - name: sessionId
- *         description: Session's ID
+ *         description: Session's unique ID
  *         in: path
  *         required: true
  *         type: string
- *       - name: body
- *         description: Message content object
+ *       - name: content
+ *         description: Content of the message
  *         in: body
  *         required: true
  *         schema:
- *           $ref: '#/definitions/MessageContent'
+ *           type: object
+ *           required:
+ *             - content
+ *           properties:
+ *             content:
+ *               type: string
  *     responses:
  *       200:
- *         description: Session successfully updated with the new message and the system's response
+ *         description: Message successfully added and returns the updated session
  *         schema:
- *           $ref: '#/definitions/Session'
+ *           type: object
+ *           properties:
+ *             _id:
+ *               type: string
+ *             createdAt:
+ *               type: string
+ *               format: date-time
+ *             user:
+ *               type: string
+ *             title:
+ *               type: string
+ *             messages:
+ *               type: array
+ *               items:
+ *                 type: string
+ *       400:
+ *         description: Bad request, content or sessionId missing
  *       500:
  *         description: Internal Server Error
  */
 router.put('/session/:sessionId/messages', async (req, res) => {
 	try {
 		const session = await Session.findById(req.params.sessionId)
-		console.log(session)
 		messages = session.messages
+		if (!req.body.content || !req.params.sessionId) {
+			return res
+				.status(400)
+				.json({ error: 'Content and sessionId is required' })
+		}
+
 		messages.push(req.body.content)
-		console.log(messages)
 		result = await openAIChat(messages)
 		console.log(result)
 		if (result) {
