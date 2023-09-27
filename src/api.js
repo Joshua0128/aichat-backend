@@ -74,12 +74,17 @@ router.get('/session', async (req, res) => {
  *         description: Internal Server Error
  */
 
-router.get('/session/user/:userId', async (req, res) => {
+router.get('/users/:userId/sessions', async (req, res) => {
 	try {
+		if (!req.params.userId) {
+			return res.status(400).json({ error: 'User ID is required' })
+		}
+
 		const sessions = await Session.find(
 			{ user: req.params.userId },
 			'user title createdAt'
 		)
+
 		res.json(sessions)
 	} catch (error) {
 		res.status(500).json({ error: 'Internal Server Error' })
@@ -109,7 +114,14 @@ router.get('/session/user/:userId', async (req, res) => {
  */
 router.get('/session/:sessionId', async (req, res) => {
 	try {
+		if (!req.params.sessionId) {
+			return res.status(400).json({ error: 'Session ID is required' })
+		}
 		const session = await Session.findById(req.params.sessionId)
+		if (!session) {
+			return res.status(404).json({ error: 'Session not found' })
+		}
+
 		res.json(session)
 	} catch (error) {
 		res.status(500).json({ error: 'Internal Server Error' })
@@ -143,7 +155,18 @@ router.get('/session/:sessionId', async (req, res) => {
  */
 router.delete('/session/:sessionId', async (req, res) => {
 	try {
-		await Session.findByIdAndDelete(req.params.sessionId)
+		if (!req.params.sessionId) {
+			return res.status(400).json({ error: 'Session ID is required' })
+		}
+
+		const deletedSession = await Session.findByIdAndDelete(
+			req.params.sessionId
+		)
+
+		if (!deletedSession) {
+			return res.status(404).json({ error: 'Session not found' })
+		}
+
 		res.json({ message: 'Session deleted' })
 	} catch (error) {
 		res.status(500).json({ error: 'Internal Server Error' })
@@ -185,9 +208,11 @@ router.delete('/session/:sessionId', async (req, res) => {
  *       500:
  *         description: Internal Server Error
  */
-router.post('/session/:userId', async (req, res) => {
+router.post('/users/:userId/sessions', async (req, res) => {
 	try {
-		console.log(req.params.userId)
+		if (!req.params.userId) {
+			return res.status(400).json({ error: 'User ID is required' })
+		}
 		const session = new Session({
 			user: req.params.userId,
 			title: new Date().toLocaleString(),
@@ -252,13 +277,19 @@ router.post('/session/:userId', async (req, res) => {
  */
 router.put('/session/:sessionId/messages', async (req, res) => {
 	try {
-		const session = await Session.findById(req.params.sessionId)
-		messages = session.messages
 		if (!req.body.content || !req.params.sessionId) {
 			return res
 				.status(400)
 				.json({ error: 'Content and sessionId is required' })
 		}
+
+		const session = await Session.findById(req.params.sessionId)
+
+		if (!session) {
+			return res.status(404).json({ error: 'Session not found' })
+		}
+
+		messages = session.messages
 
 		messages.push(req.body.content)
 		result = await openAIChat(messages)
@@ -318,9 +349,19 @@ router.put('/session/:sessionId/messages', async (req, res) => {
  *       500:
  *         description: Internal Server Error
  */
-router.put('/session/:sessionId/:title', async (req, res) => {
+router.put('/session/:sessionId', async (req, res) => {
 	try {
+		if (!req.params.sessionId || !req.query.title) {
+			return res
+				.status(400)
+				.json({ error: 'Session ID and title is required' })
+		}
+
 		const session = await Session.findById(req.params.sessionId)
+		if (!session) {
+			return res.status(404).json({ error: 'Session not found' })
+		}
+
 		session.title = req.params.title
 		await session.save()
 		res.json(session)

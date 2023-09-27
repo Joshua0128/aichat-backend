@@ -42,7 +42,7 @@ const swaggerOptions = {
 const swaggerSpec = swaggerJsdoc(swaggerOptions)
 
 const app = express()
-const PORT = 3333
+const PORT = 3000
 
 app.use(express.json())
 app.use(cors())
