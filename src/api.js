@@ -118,7 +118,6 @@ router.get('/session/:sessionId', async (req, res) => {
 			return res.status(400).json({ error: 'Session ID is required' })
 		}
 		const session = await Session.findById(req.params.sessionId)
-		console.log(session.__v)
 		res.json(session)
 	} catch (error) {
 		if (error.name === 'CastError') {
@@ -209,10 +208,6 @@ router.delete('/session/:sessionId', async (req, res) => {
  */
 router.post('/users/:userId/sessions', async (req, res) => {
 	try {
-		console.log(req.params.userId)
-		if (!req.params.userId) {
-			return res.status(400).json({ error: 'User ID is required' })
-		}
 		const session = new Session({
 			user: req.params.userId,
 			title: new Date().toLocaleString(),
@@ -222,7 +217,6 @@ router.post('/users/:userId/sessions', async (req, res) => {
 		await session.save()
 		res.json(session)
 	} catch (error) {
-		console.log(error)
 		res.status(500).json({ error: 'Internal Server Error' })
 	}
 })
@@ -289,7 +283,6 @@ router.put('/session/:sessionId/messages', async (req, res) => {
 
 		messages.push(req.body.content)
 		result = await openAIChat(messages)
-		console.log(result)
 		if (result) {
 			session.messages.push(result.message.content)
 			await session.save()
@@ -303,7 +296,6 @@ router.put('/session/:sessionId/messages', async (req, res) => {
 		if (error.name === 'CastError') {
 			return res.status(404).json({ error: 'Session not found' })
 		}
-		console.log(error)
 		res.status(500).json({ error: 'Internal Server Error' })
 	}
 })
@@ -360,10 +352,8 @@ router.put('/session/:sessionId', async (req, res) => {
 
 		session.title = req.query.title
 		await session.save()
-		console.log(session)
 		res.json(session)
 	} catch (error) {
-		console.log(error)
 		// catch error if session is not found
 		if (error.name === 'CastError') {
 			return res.status(404).json({ error: 'Session not found' })
