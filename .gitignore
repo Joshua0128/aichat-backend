@@ -26,3 +26,4 @@ Thumbs.db
 
 # 環境變數
 .env
+.vercel

@@ -52,7 +52,7 @@ router.get('/session', async (req, res) => {
 
 /**
  * @swagger
- * /session/user/{userId}:
+ * /users/{userId}/sessions:
  *   get:
  *     description: Get sessions based on a specific user ID
  *     produces:
@@ -70,8 +70,20 @@ router.get('/session', async (req, res) => {
  *           type: array
  *           items:
  *             $ref: '#/definitions/Session'
+ *       400:
+ *         description: Bad Request. User ID is required.
+ *         schema:
+ *           type: object
+ *           properties:
+ *             error:
+ *               type: string
  *       500:
  *         description: Internal Server Error
+ *         schema:
+ *           type: object
+ *           properties:
+ *             error:
+ *               type: string
  */
 
 router.get('/users/:userId/sessions', async (req, res) => {
@@ -95,7 +107,7 @@ router.get('/users/:userId/sessions', async (req, res) => {
  * @swagger
  * /session/{sessionId}:
  *   get:
- *     description: Get a specific session by its ID
+ *     description: Get a session based on a specific session ID
  *     produces:
  *       - application/json
  *     parameters:
@@ -109,8 +121,27 @@ router.get('/users/:userId/sessions', async (req, res) => {
  *         description: Successful operation. Returns the session associated with the provided session ID.
  *         schema:
  *           $ref: '#/definitions/Session'
+ *       400:
+ *         description: Bad Request. Session ID is required.
+ *         schema:
+ *           type: object
+ *           properties:
+ *             error:
+ *               type: string
+ *       404:
+ *         description: Not Found. Session not found.
+ *         schema:
+ *           type: object
+ *           properties:
+ *             error:
+ *               type: string
  *       500:
  *         description: Internal Server Error
+ *         schema:
+ *           type: object
+ *           properties:
+ *             error:
+ *               type: string
  */
 router.get('/session/:sessionId', async (req, res) => {
 	try {
@@ -173,39 +204,31 @@ router.delete('/session/:sessionId', async (req, res) => {
 
 /**
  * @swagger
- * /session/{userId}:
+ * /users/{userId}/sessions:
  *   post:
- *     description: Create a new session for a specified user with current date-time title
+ *     description: Create a new session for a specific user ID
  *     produces:
  *       - application/json
  *     parameters:
  *       - name: userId
- *         description: ID of the user for whom the session is to be created
+ *         description: User's ID
  *         in: path
  *         required: true
  *         type: string
  *     responses:
- *       200:
- *         description: Session successfully created for the specified user
+ *       201:
+ *         description: Successful operation. Returns the created session.
+ *         schema:
+ *           $ref: '#/definitions/Session'
+ *       500:
+ *         description: Internal Server Error
  *         schema:
  *           type: object
  *           properties:
- *             _id:
+ *             error:
  *               type: string
- *             user:
- *               type: string
- *             title:
- *               type: string
- *             messages:
- *               type: array
- *               items:
- *                 type: string
- *             createdAt:
- *               type: string
- *               format: date-time
- *       500:
- *         description: Internal Server Error
  */
+
 router.post('/users/:userId/sessions', async (req, res) => {
 	try {
 		const session = new Session({
@@ -302,44 +325,50 @@ router.put('/session/:sessionId/messages', async (req, res) => {
 
 /**
  * @swagger
- * /session/{sessionId}/{title}:
+ * /session/{sessionId}:
  *   put:
- *     description: Update the title of a specified session
+ *     description: Update the title of a session based on a specific session ID
  *     produces:
  *       - application/json
  *     parameters:
  *       - name: sessionId
- *         description: ID of the session to be updated
+ *         description: Session's ID
  *         in: path
  *         required: true
  *         type: string
  *       - name: title
  *         description: New title for the session
- *         in: path
+ *         in: query
  *         required: true
  *         type: string
  *     responses:
  *       200:
- *         description: Session title successfully updated
+ *         description: Successful operation. Returns the updated session.
+ *         schema:
+ *           $ref: '#/definitions/Session'
+ *       400:
+ *         description: Bad Request. Session ID and title are required.
  *         schema:
  *           type: object
  *           properties:
- *             _id:
+ *             error:
  *               type: string
- *             user:
+ *       404:
+ *         description: Not Found. Session not found.
+ *         schema:
+ *           type: object
+ *           properties:
+ *             error:
  *               type: string
- *             title:
- *               type: string
- *             messages:
- *               type: array
- *               items:
- *                 type: string
- *             createdAt:
- *               type: string
- *               format: date-time
  *       500:
  *         description: Internal Server Error
+ *         schema:
+ *           type: object
+ *           properties:
+ *             error:
+ *               type: string
  */
+
 router.put('/session/:sessionId', async (req, res) => {
 	try {
 		if (!req.params.sessionId || !req.query.title) {
